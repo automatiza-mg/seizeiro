@@ -3,10 +3,8 @@ package database
 
 import (
 	"context"
-	"errors"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -24,17 +22,4 @@ func New(ctx context.Context, connString string) (*pgxpool.Pool, error) {
 	}
 
 	return pool, nil
-}
-
-// IsUniqueError verifica se o erro informado é uma unique_violation para a constraint informada.
-//
-// O nome da constraint gerada pelo PostgreSQL segue o seguinte padrão: {tabela}_{coluna}_key.
-//
-//	ok := IsUniqueError(err, "usuarios_cpf_key") // Tabela: "usuarios" Coluna: "cpf".
-func IsUniqueError(err error, constraintName string) bool {
-	pgError, ok := errors.AsType[*pgconn.PgError](err)
-	if !ok {
-		return false
-	}
-	return pgError.Code == "23505" && pgError.ConstraintName == constraintName
 }
