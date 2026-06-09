@@ -12,6 +12,9 @@ const (
 	StatusFailed     Status = "failed"
 	StatusCanceled   Status = "canceled"
 	StatusSkipped    Status = "skipped"
+	// StatusCompleted é o status terminal de sucesso de uma operação em lote.
+	// Os documentos individuais usam os demais status (ex: [StatusSucceeded]).
+	StatusCompleted Status = "completed"
 )
 
 type AnalyzeOperation struct {
@@ -185,4 +188,35 @@ type Warning struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
 	Target  string `json:"target,omitempty"`
+}
+
+// BatchAnalyzeOperation representa o status de uma operação de análise em lote da
+// Azure Document Intelligence.
+//
+// O resultado não contém o conteúdo extraído dos documentos: cada documento processado
+// com sucesso aponta para um arquivo de resultado via [BatchResultDetail.ResultURL].
+type BatchAnalyzeOperation struct {
+	ResultID            string      `json:"resultId"`
+	Status              Status      `json:"status"`
+	PercentCompleted    int         `json:"percentCompleted"`
+	CreatedDateTime     time.Time   `json:"createdDateTime"`
+	LastUpdatedDateTime time.Time   `json:"lastUpdatedDateTime"`
+	Result              BatchResult `json:"result"`
+	Error               *AzureError `json:"error,omitempty"`
+}
+
+// BatchResult agrega o resultado de uma operação de análise em lote.
+type BatchResult struct {
+	SucceededCount int                 `json:"succeededCount"`
+	FailedCount    int                 `json:"failedCount"`
+	SkippedCount   int                 `json:"skippedCount"`
+	Details        []BatchResultDetail `json:"details,omitempty"`
+}
+
+// BatchResultDetail representa o resultado do processamento de um único documento em um lote.
+type BatchResultDetail struct {
+	SourceURL string      `json:"sourceUrl"`
+	ResultURL string      `json:"resultUrl,omitempty"`
+	Status    Status      `json:"status"`
+	Error     *AzureError `json:"error,omitempty"`
 }

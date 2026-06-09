@@ -1,9 +1,13 @@
 package docintel
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 )
+
+// ErrInvalidBatchRequest é retornado quando os parâmetros de uma análise em lote são inválidos.
+var ErrInvalidBatchRequest = errors.New("docintel: invalid batch request")
 
 type AzureError struct {
 	Code    string `json:"code"`
