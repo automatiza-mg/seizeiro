@@ -32,6 +32,27 @@ func (q *Queries) GetUsuario(ctx context.Context, id pgtype.UUID) (Usuario, erro
 	return i, err
 }
 
+const getUsuarioByCPF = `-- name: GetUsuarioByCPF :one
+SELECT id, nome, cpf, email, email_verificado, hash_senha, criado_em, atualizado_em FROM usuarios WHERE cpf = $1
+`
+
+// GetUsuarioByCPF busca um usuário pelo CPF informado.
+func (q *Queries) GetUsuarioByCPF(ctx context.Context, cpf string) (Usuario, error) {
+	row := q.db.QueryRow(ctx, getUsuarioByCPF, cpf)
+	var i Usuario
+	err := row.Scan(
+		&i.ID,
+		&i.Nome,
+		&i.CPF,
+		&i.Email,
+		&i.EmailVerificado,
+		&i.HashSenha,
+		&i.CriadoEm,
+		&i.AtualizadoEm,
+	)
+	return i, err
+}
+
 const saveUsuario = `-- name: SaveUsuario :one
 INSERT INTO usuarios (nome, cpf, email, email_verificado, hash_senha)
 VALUES ($1, $2, $3, $4, $5)

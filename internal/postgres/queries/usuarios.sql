@@ -8,6 +8,10 @@ RETURNING *;
 -- name: GetUsuario :one
 SELECT * FROM usuarios WHERE id = $1;
 
+-- GetUsuarioByCPF busca um usuário pelo CPF informado.
+-- name: GetUsuarioByCPF :one
+SELECT * FROM usuarios WHERE cpf = $1;
+
 -- UpdateSenhaUsuario atualiza o hash da senha de um usuário.
 -- name: UpdateSenhaUsuario :exec
 UPDATE usuarios SET

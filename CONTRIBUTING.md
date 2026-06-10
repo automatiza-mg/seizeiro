@@ -99,12 +99,12 @@ do identificador e escrito em português:
 ```go
 // WeakPasswordError é o erro retornado quando a senha informada por um usuário é fraca.
 type WeakPasswordError struct {
-	Violations []string
+  Violations []string
 }
 
 // Description retorna uma descrição amigável para o usuário final com os erros.
 func (w *WeakPasswordError) Description() string {
-	// ...
+  // ...
 }
 ```
 
