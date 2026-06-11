@@ -14,6 +14,8 @@ require (
 	github.com/openai/openai-go/v3 v3.39.0
 	github.com/ory/dockertest/v4 v4.0.0
 	github.com/pgvector/pgvector-go v0.4.0
+	github.com/pkoukk/tiktoken-go v0.1.6
+	github.com/pkoukk/tiktoken-go-loader v0.0.2
 	github.com/pressly/goose/v3 v3.27.1
 	github.com/riverqueue/river v0.39.0
 	github.com/riverqueue/river/riverdriver/riverdatabasesql v0.39.0
@@ -93,7 +95,6 @@ require (
 	github.com/pingcap/log v1.1.0 // indirect
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20260418072757-ce92298d1124 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
-	github.com/pkoukk/tiktoken-go v0.1.6 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/procfs v0.20.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect

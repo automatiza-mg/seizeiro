@@ -8,8 +8,19 @@ type DocumentIntelligence struct {
 	Endpoint string `env:"AZURE_DOCINTEL_ENDPOINT"`
 }
 
+// Storage contém as configurações de armazenamento de objetos (pacote blob).
+//
+// Quando AzureAccount está definido, usa o Azure Blob Storage; caso contrário,
+// usa o sistema de arquivos no diretório FilesystemRoot.
+type Storage struct {
+	AzureAccount   string `env:"STORAGE_AZURE_ACCOUNT"`
+	AzureContainer string `env:"STORAGE_AZURE_CONTAINER"`
+	FilesystemRoot string `env:"STORAGE_FILESYSTEM_ROOT" envDefault:".blob"`
+}
+
 // OpenAI contém as configurações necessárias para o embedder do pacote llm.
 type OpenAI struct {
+	BaseURL        string `env:"OPENAI_BASE_URL,notEmpty"`
 	APIKey         string `env:"OPENAI_API_KEY,notEmpty"`
 	EmbeddingModel string `env:"OPENAI_EMBEDDING_MODEL" envDefault:"text-embedding-3-small"`
 	// EmbeddingDimensions deve casar com a dimensão da coluna VECTOR usada no schema.
@@ -24,6 +35,7 @@ type Config struct {
 
 	DocIntel DocumentIntelligence
 	OpenAI   OpenAI
+	Storage  Storage
 }
 
 // NewFromEnv cria uma nova [Config] com base nas variáveis de ambiente definidas no sistema operacional.

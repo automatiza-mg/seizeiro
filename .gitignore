@@ -1,4 +1,5 @@
 bin
+.blob
 .idea
 .cursor
 .vscode

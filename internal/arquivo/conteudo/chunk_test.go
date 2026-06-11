@@ -13,11 +13,11 @@ import (
 func TestSplitText(t *testing.T) {
 	t.Parallel()
 
-	t.Run("markdown", func(t *testing.T) {
+	t.Run("texto longo gera múltiplos chunks", func(t *testing.T) {
 		t.Parallel()
 
-		text := "# Título\n\n" + strings.Repeat("parágrafo de exemplo. ", 200)
-		chunks, err := splitText(text, FormatoMarkdown)
+		text := strings.Repeat("parágrafo de exemplo. ", 200)
+		chunks, err := splitText(text)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -31,23 +31,10 @@ func TestSplitText(t *testing.T) {
 		}
 	})
 
-	t.Run("plain", func(t *testing.T) {
-		t.Parallel()
-
-		text := strings.Repeat("linha de texto puro\n", 300)
-		chunks, err := splitText(text, FormatoPlain)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(chunks) < 2 {
-			t.Fatalf("want múltiplos chunks, got %d", len(chunks))
-		}
-	})
-
 	t.Run("texto curto gera um chunk", func(t *testing.T) {
 		t.Parallel()
 
-		chunks, err := splitText("texto curto", FormatoPlain)
+		chunks, err := splitText("texto curto")
 		if err != nil {
 			t.Fatal(err)
 		}

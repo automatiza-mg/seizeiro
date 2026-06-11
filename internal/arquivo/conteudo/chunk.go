@@ -10,23 +10,12 @@ const (
 	chunkOverlap = 200
 )
 
-// splitText divide o texto em chunks com sobreposição, escolhendo a estratégia
-// de acordo com o formato do conteúdo. Conteúdo em Markdown é dividido
-// preservando a estrutura do documento; os demais formatos são divididos
+// splitText divide o texto em chunks com sobreposição, dividindo
 // recursivamente por caracteres.
-func splitText(text, formato string) ([]string, error) {
-	var splitter textsplitter.TextSplitter
-	switch formato {
-	case FormatoMarkdown:
-		splitter = textsplitter.NewMarkdownTextSplitter(
-			textsplitter.WithChunkSize(chunkSize),
-			textsplitter.WithChunkOverlap(chunkOverlap),
-		)
-	default:
-		splitter = textsplitter.NewRecursiveCharacter(
-			textsplitter.WithChunkSize(chunkSize),
-			textsplitter.WithChunkOverlap(chunkOverlap),
-		)
-	}
+func splitText(text string) ([]string, error) {
+	splitter := textsplitter.NewRecursiveCharacter(
+		textsplitter.WithChunkSize(chunkSize),
+		textsplitter.WithChunkOverlap(chunkOverlap),
+	)
 	return splitter.SplitText(text)
 }

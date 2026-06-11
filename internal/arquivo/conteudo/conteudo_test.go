@@ -12,6 +12,7 @@ import (
 	"github.com/automatiza-mg/seizeiro/internal/arquivo"
 	"github.com/automatiza-mg/seizeiro/internal/blob"
 	"github.com/automatiza-mg/seizeiro/internal/database"
+	"github.com/automatiza-mg/seizeiro/internal/llm"
 	"github.com/automatiza-mg/seizeiro/internal/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
@@ -104,6 +105,11 @@ func newFixture(tb testing.TB) *fixture {
 	// 1536 dimensões para casar com o schema VECTOR(1536).
 	embedder := &fakeEmbedder{dims: 1536}
 
+	tokens, err := llm.NewTokenCounter("text-embedding-3-small")
+	if err != nil {
+		tb.Fatal(err)
+	}
+
 	// Client insert-only: sem workers nem queues, apenas para enfileirar tasks.
 	riverClient, err := river.NewClient(riverpgxv5.New(pool), &river.Config{})
 	if err != nil {
@@ -112,7 +118,7 @@ func newFixture(tb testing.TB) *fixture {
 
 	return &fixture{
 		pool:     pool,
-		service:  NewService(pool, ocr, storage, embedder, riverClient),
+		service:  NewService(pool, ocr, storage, embedder, tokens, riverClient),
 		arquivos: arquivo.NewService(pool, storage, riverClient),
 		ocr:      ocr,
 		embedder: embedder,

@@ -24,6 +24,7 @@ import (
 	"github.com/automatiza-mg/seizeiro/internal/markdown"
 	"github.com/automatiza-mg/seizeiro/internal/postgres"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pgvector/pgvector-go"
 	"github.com/riverqueue/river"
@@ -38,6 +39,14 @@ const (
 	FormatoMarkdown = "markdown"
 )
 
+var (
+	// ErrNotFound é retornado quando o conteúdo não existe.
+	ErrNotFound = errors.New("conteudo: not found")
+)
+
+var _ TokenCounter = (*llm.TokenCounter)(nil)
+var _ OCR = (*docintel.Client)(nil)
+
 // OCR extrai texto de documentos via análise assíncrona.
 type OCR interface {
 	// AnalyzeDocument inicia a análise e retorna a location da operação.
@@ -46,11 +55,10 @@ type OCR interface {
 	PollResult(ctx context.Context, location string) (string, error)
 }
 
-// Garante que o cliente da Azure Document Intelligence implementa OCR.
-var _ OCR = (*docintel.Client)(nil)
-
-// ErrNotFound é retornado quando o conteúdo não existe.
-var ErrNotFound = errors.New("conteudo: not found")
+// TokenCounter conta os tokens de um texto.
+type TokenCounter interface {
+	Count(text string) int
+}
 
 type Service struct {
 	pool     *pgxpool.Pool
@@ -58,16 +66,18 @@ type Service struct {
 	ocr      OCR
 	storage  blob.Storage
 	embedder llm.Embedder
+	tokens   TokenCounter
 	river    *river.Client[pgx.Tx]
 }
 
-func NewService(pool *pgxpool.Pool, ocr OCR, storage blob.Storage, embedder llm.Embedder, river *river.Client[pgx.Tx]) *Service {
+func NewService(pool *pgxpool.Pool, ocr OCR, storage blob.Storage, embedder llm.Embedder, tokens TokenCounter, river *river.Client[pgx.Tx]) *Service {
 	return &Service{
 		pool:     pool,
 		q:        postgres.New(pool),
 		ocr:      ocr,
 		storage:  storage,
 		embedder: embedder,
+		tokens:   tokens,
 		river:    river,
 	}
 }
@@ -197,7 +207,7 @@ func (s *Service) ChunkConteudo(ctx context.Context, conteudoID int64) error {
 		return nil
 	}
 
-	chunks, err := splitText(row.Conteudo, row.Formato)
+	chunks, err := splitText(row.Conteudo)
 	if err != nil {
 		return fmt.Errorf("split text: %w", err)
 	}
@@ -227,6 +237,7 @@ func (s *Service) ChunkConteudo(ctx context.Context, conteudoID int64) error {
 			ConteudoID: conteudoID,
 			Indice:     int32(i),
 			Conteudo:   chunk,
+			Tokens:     countTokens(s.tokens, chunk),
 			Embedding:  pgvector.NewVector(embeddings[i]),
 		})
 		if err != nil {
@@ -238,4 +249,15 @@ func (s *Service) ChunkConteudo(ctx context.Context, conteudoID int64) error {
 	}
 
 	return tx.Commit(ctx)
+}
+
+// Conta os tokens de text como telemetria opcional.
+//
+// A contagem é best-effort: na ausência de um contador, retorna um
+// valor nulo (NULL no banco) sem interromper o fluxo.
+func countTokens(counter TokenCounter, text string) pgtype.Int4 {
+	if counter == nil {
+		return pgtype.Int4{}
+	}
+	return pgtype.Int4{Int32: int32(counter.Count(text)), Valid: true}
 }
