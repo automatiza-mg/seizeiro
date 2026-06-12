@@ -179,3 +179,26 @@ func (s *Service) GetUsuario(ctx context.Context, plataforma, plataformaID strin
 		CriadoEm:     row.CriadoEm.Time,
 	}, nil
 }
+
+type TokenData struct {
+	Plataforma   string `json:"plataforma"`
+	PlataformaID string `json:"plataforma_id"`
+}
+
+// GetTokenData retorna os dados de cadastro de um token.
+// Se o token for inválido, retorna [auth.ErrInvalidToken].
+func (s *Service) GetTokenData(ctx context.Context, token string) (*TokenData, error) {
+	hash := sha256.Sum256([]byte(token))
+	row, err := s.q.GetTokenChatbot(ctx, hash[:])
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, auth.ErrInvalidToken
+		}
+		return nil, err
+	}
+
+	return &TokenData{
+		Plataforma:   row.Plataforma,
+		PlataformaID: row.PlataformaID,
+	}, nil
+}

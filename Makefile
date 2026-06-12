@@ -9,3 +9,11 @@ server/run: server/build
 .PHONY: sql/build
 sql/build:
 	@go tool sqlc generate
+
+.PHONY: mcp/build
+mcp/build:
+	@go build -o bin/mcp cmd/mcp/*.go
+
+.PHONY: mcp/run
+mcp/run: mcp/build
+	@bin/mcp
